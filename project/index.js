@@ -93,6 +93,16 @@ let books = [
   },
 ]
 
+const bookCount = (name, books) => {
+  let booksArray = books
+  
+  let newArray = booksArray.filter(b => b.author === name)
+
+  let count = newArray.length
+
+  return count
+}
+
 /*
   you can remove the placeholder query once your first one has been implemented 
 */
@@ -103,12 +113,13 @@ type Query {
   bookCount: Int!
   authorCount: Int!
   allBooks: [Book!]!
+  allAuthors: [Author!]!
   }
 
 type Author {
   name: String!
   id: String!
-  born: Int!
+  bookCount: Int!
 }
 
 type Book {
@@ -124,7 +135,13 @@ const resolvers = {
   Query: {
     bookCount: () => books.length,
     authorCount: () => authors.length,
-    allBooks: () => books
+    allBooks: () => books,
+    allAuthors: () => authors,
+  },
+  Author: {
+    name: (root) => root.name,
+    id: (root) => root.id,
+    bookCount: (root) => {return books.filter(b => b.author == root.name).length}
   }
 }
 
