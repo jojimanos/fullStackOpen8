@@ -1,5 +1,6 @@
 const { ApolloServer } = require('@apollo/server')
 const { startStandaloneServer } = require('@apollo/server/standalone')
+const { v1: uuid } = require('uuid')
 
 let authors = [
   {
@@ -108,7 +109,6 @@ const bookCount = (name, books) => {
 */
 
 const typeDefs = `
-  
 type Query {
   bookCount: Int!
   authorCount: Int!
@@ -129,6 +129,15 @@ type Book {
   id: String!
   genres: [String!]!
 }
+
+type Mutation {
+  addBook(
+    title: String!
+    author: String!
+    published: Int!
+    genres: [String!]!
+  ): Book
+}
 `
 
 const resolvers = {
@@ -138,15 +147,14 @@ const resolvers = {
     allBooks: (root, args) => {
       let result
       if (!args.genres) {
-          result = books.filter(b => b.author === args.author)
+        result = books.filter(b => b.author === args.author)
       }
       else if (!args.author) {
-          result = books.filter(b => b.genres.includes(args.genres))
+        result = books.filter(b => b.genres.includes(args.genres))
       }
       else if (args.author && args.genres) {
-          let authorArray = books.filter(b => b.author === args.author)
-          result = authorArray.filter(b => b.genres.includes(args.genres))
-          // result = authorArray.filter(b => args.genres.every(genre => b.genres.includes(genre)))
+        let authorArray = books.filter(b => b.author === args.author)
+        result = authorArray.filter(b => b.genres.includes(args.genres))
       }
       else {
         result = books
@@ -159,6 +167,23 @@ const resolvers = {
     name: (root) => root.name,
     id: (root) => root.id,
     bookCount: (root) => { return books.filter(b => b.author == root.name).length }
+  },
+  Mutation: {
+    addBook: (root, args) => {
+      const book = { ...args, id: uuid() }
+      books = books.concat(book)
+
+      let authorsArray = authors.map(a => a.author)
+      if (authorsArray.includes(args.author) === false) {
+        authors = authors.concat({
+          name: args.author,
+          born: null,
+          id: uuid()
+        })
+      } 
+
+      return book
+    },
   }
 }
 
