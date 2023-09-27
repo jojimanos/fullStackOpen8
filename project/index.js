@@ -119,6 +119,7 @@ type Query {
 type Author {
   name: String!
   id: String!
+  born: Int!
   bookCount: Int!
 }
 
@@ -137,6 +138,10 @@ type Mutation {
     published: Int!
     genres: [String!]!
   ): Book
+  editAuthor(
+    name: String!
+    setBornTo: Int!
+  ): Author
 }
 `
 
@@ -184,6 +189,28 @@ const resolvers = {
 
       return book
     },
+    editAuthor: (root, args) => {
+
+      const names = authors.map(a => a.name)
+
+      if (names.includes(args.name) === false) {
+        return
+      }
+
+      let entryToUpdate = authors.filter(a => a.name === args.name)
+
+      entryToUpdate = entryToUpdate[0]
+
+      console.log(entryToUpdate)
+
+      entryToUpdate = {...entryToUpdate, born: args.setBornTo}
+
+      console.log(entryToUpdate)
+
+      authors = authors.map(a => {return a.name !== args.name ? a : entryToUpdate})
+
+      return entryToUpdate
+    }
   }
 }
 
