@@ -8,8 +8,8 @@ const ALL_AUTHORS = gql`
 query {
   allAuthors {
     name,
-    born,
     id,
+    born,
     bookCount
   }
 }
@@ -20,8 +20,18 @@ const App = () => {
 
   const result = useQuery(ALL_AUTHORS)
 
-  if (result.loading)
-  return
+  if (result.loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (result.error) {
+    return <p>Error: {result.error.message}</p>;
+  }
+
+  // Ensure that result.data is defined before accessing it
+  if (!result.data) {
+    return <p>Data not available</p>;
+  }
 
   console.log(result)
 
