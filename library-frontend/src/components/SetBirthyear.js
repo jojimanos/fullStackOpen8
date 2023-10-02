@@ -23,10 +23,6 @@ query {
 `
 const SetBirthyear = (props) => {
 
-  // if (!props.show) {
-  // return null
-  // }
-
   const [author, setAuthor] = useState('')
   const [birthyear, setBirthyear] = useState(0)
 

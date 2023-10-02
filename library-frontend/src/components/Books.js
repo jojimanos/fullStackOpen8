@@ -1,6 +1,6 @@
 const Books = ({books, show}) => {
 
-  if (show) {
+  if (!show) {
     return null
   }
 
