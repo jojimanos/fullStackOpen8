@@ -1,4 +1,8 @@
-const Books = ({books}) => {
+const Books = ({books, show}) => {
+
+  if (show) {
+    return null
+  }
 
   return (
     <div>
