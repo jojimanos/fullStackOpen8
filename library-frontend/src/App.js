@@ -30,7 +30,7 @@ const App = () => {
 
   const result = useQuery(ALL_AUTHORS)
   const resultBooks = useQuery(ALL_BOOKS)
-
+  
   if (result.loading) {
     return <p>Loading...</p>;
   }
