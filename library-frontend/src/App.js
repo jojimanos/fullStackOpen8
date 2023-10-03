@@ -73,7 +73,7 @@ if (resultBooks.loading) {
 
       <NewBook show={page === 'add'} />
 
-      <SetBirthyear show={page === 'edit'}/>
+      <SetBirthyear authors={result.data.allAuthors} show={page === 'edit'}/>
     </div>
   )
 }

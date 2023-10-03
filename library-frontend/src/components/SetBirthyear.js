@@ -9,7 +9,7 @@ mutation editAuthor($name: String!, $setBornTo: Int!) {
       born
     }
   }
-`;
+`
 
 const ALL_AUTHORS = gql`
 query {
@@ -21,6 +21,7 @@ query {
   }
 }
 `
+
 const SetBirthyear = (props) => {
 
   const [author, setAuthor] = useState('')
@@ -49,13 +50,9 @@ const SetBirthyear = (props) => {
   return (
     <div>
       <form onSubmit={submit}>
-        <div>
-          author
-          <input
-            value={author}
-            onChange={({ target }) => setAuthor(target.value)}
-          />
-        </div>
+        <select value={author} onChange={e => setAuthor(e.target.value)}>
+          {props.authors.map(a => { return <option value={a.name}>{a.name}</option> })}
+        </select>
         <div>
           birthyear
           <input
