@@ -13,12 +13,12 @@ const { v1: uuid } = require('uuid')
 const MONGO_URI = process.env.MONGO_URI
 
 mongoose.connect(MONGO_URI)
-.then(() => {
-  console.log('Connected to MongoDB')
-})
-.catch((error) => {
-  console.log("There was an error", error.message)
-})
+  .then(() => {
+    console.log('Connected to MongoDB')
+  })
+  .catch((error) => {
+    console.log("There was an error", error.message)
+  })
 
 let authors = [
   {
@@ -71,21 +71,21 @@ let books = [
   {
     title: 'Agile software development',
     published: 2002,
-    author: 'Robert Martin',
+    author: { name: 'Robert Martin', id: "afa5b6f1-344d-11e9-a414-719c6709cf3e", born: 1952 },
     id: "afa5b6f5-344d-11e9-a414-719c6709cf3e",
     genres: ['agile', 'patterns', 'design']
   },
   {
     title: 'Refactoring, edition 2',
     published: 2018,
-    author: 'Martin Fowler',
+    author: { name: 'Martin Fowler', born: 1963 },
     id: "afa5de00-344d-11e9-a414-719c6709cf3e",
     genres: ['refactoring']
   },
   {
     title: 'Refactoring to patterns',
     published: 2008,
-    author: 'Joshua Kerievsky',
+    author: { name: 'Joshua Kerievsky' },
     id: "afa5de01-344d-11e9-a414-719c6709cf3e",
     genres: ['refactoring', 'patterns']
   },
@@ -138,7 +138,7 @@ type Author {
   name: String!
   id: String!
   born: Int
-  bookCount: Int!
+  bookCount: Int
 }
 
 type Book {
@@ -173,17 +173,17 @@ const resolvers = {
         result = Book.find({})
       }
       else if (!args.genres) {
-        let books = Book.find({author: args.author})
+        let books = Book.find({ author: args.author })
         result = books
         // result = books.filter(b => b.author === args.author)
       }
       else if (!args.author) {
-        let books = Book.find({genres: args.genres})
+        let books = Book.find({ genres: args.genres })
         result = books
         // result = books.filter(b => b.genres.includes(args.genres))
       }
       else if (args.author && args.genres) {
-        let books = Book.find({author: args.author, genres: args.genres})
+        let books = Book.find({ author: args.author, genres: args.genres })
         result = books
         // let authorArray = books.filter(b => b.author === args.author)
         // result = authorArray.filter(b => b.genres.includes(args.genres))
@@ -198,41 +198,37 @@ const resolvers = {
     bookCount: (root) => { return books.filter(b => b.author == root.name).length }
   },
   Mutation: {
-    addBook: (root, args) => {
-      const book = new Book({...args})
+    addBook: async (root, args) => {
+      try {
+        // Check if the author already exists in the database
+        let author = await Author.findOne({ name: args.author });
 
-      // let authorsArray = authors.map(a => a.author)
-      // if (authorsArray.includes(args.author) === false) {
-        // authors = authors.concat({
-          // name: args.author,
-          // born: null,
-          // id: uuid()
-        // })
-      // } 
+        // If the author doesn't exist, create a new author
+        if (!author) {
+          author = new Author({ name: args.author });
+          await author.save();
+        }
 
-      return book.save()
-    },
-    editAuthor: (root, args) => {
+        // Create a new book using the provided data and the author's ObjectId
+        const book = new Book({
+          title: args.title,
+          published: args.published,
+          genres: args.genres,
+          author: author._id, // Use the ObjectId of the author
+        });
 
-      const names = authors.map(a => a.name)
-
-      if (names.includes(args.name) === false) {
-        return
+        await book.save();
+        return book;
+      } catch (error) {
+        throw new Error(`Failed to add a book: ${error.message}`);
       }
+    },
+    editAuthor: async (root, args) => {
 
-      let entryToUpdate = authors.filter(a => a.name === args.name)
+      const author = await Author({ name: args.name })
 
-      entryToUpdate = entryToUpdate[0]
-
-      console.log(entryToUpdate)
-
-      entryToUpdate = {...entryToUpdate, born: args.setBornTo}
-
-      console.log(entryToUpdate)
-
-      authors = authors.map(a => {return a.name !== args.name ? a : entryToUpdate})
-
-      return entryToUpdate
+      author.born = args.setBornTo
+      return author.save()
     }
   }
 }
