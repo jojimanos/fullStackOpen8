@@ -2,7 +2,7 @@ import { gql, useMutation } from '@apollo/client'
 import { useState } from 'react'
 
 const NEW_BOOK = gql`
-mutation addBook($title: String!, $author: String!, $published: Int!, $genres: [String!]!) {
+mutation addBook($title: String!, $author: Author!, $published: Int!, $genres: [String!]!) {
     addBook(title: $title, author: $author, published: $published, genres: $genres) {
       title
       author
@@ -15,10 +15,14 @@ mutation addBook($title: String!, $author: String!, $published: Int!, $genres: [
 const ALL_BOOKS = gql`
 query {
   allBooks {
-    author,
-    title,
-    id,
-    published,
+    author {
+      name
+      id
+      born
+    }
+    title
+    id
+    published
     genres
   }
 }
