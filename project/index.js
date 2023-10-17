@@ -158,7 +158,7 @@ const resolvers = {
     },
     editAuthor: async (root, args) => {
       try {
-        const author = await Author({ name: args.name })
+        const author = await Author.findOne({ name: args.name })
         author.born = args.setBornTo
         return author.save()
       } catch (error) {
@@ -166,18 +166,19 @@ const resolvers = {
       }
     },
     createUser: async (root, args) => {
-      const user = new User({ username: args.username, favouriteGenre: args.favouriteGenre })
 
+      try {
+      const user = new User({ username: args.username, favouriteGenre: args.favouriteGenre })
       return user.save()
-        .catch(error => {
-          throw new GraphQLError('Creating the user failed', {
+      } catch (error) {
+         throw new GraphQLError(`Creating the user failed ${error.message}`, {
             extensions: {
               code: 'BAD_USER_INPUT',
               invalidArgs: args.username,
               error
             }
           })
-        })
+      }
     },
     login: async (root, args) => {
       const user = await User.findOne({ username: args.username })
