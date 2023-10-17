@@ -88,7 +88,7 @@ const resolvers = {
       try {
         let result
         if (!args.author && !args.genres) {
-          result = Book.find({})
+          result = Book.find({}).populate('author')
         }
         else if (!args.genres) {
 
@@ -100,12 +100,12 @@ const resolvers = {
           result = books
         }
         else if (!args.author) {
-          let books = Book.find({ genres: args.genres })
+          let books = Book.find({ genres: args.genres }).populate('author')
           result = books
         }
         else if (args.author && args.genres) {
           
-          let author = await Author.findOne({ name: args.author })
+          let author = await Author.findOne({ name: args.author }).populate('author')
           
           let books = Book.find({ author: author._id, genres: args.genres })
           result = books

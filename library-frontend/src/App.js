@@ -21,7 +21,6 @@ query {
   allBooks {
     author {
       name
-      id
       born
     }
     title
@@ -63,22 +62,22 @@ const App = () => {
   }
 
   // Ensure that result.data is defined before accessing it
-  // if (!resultBooks.data) {
-    // return <p>Data not available</p>;
-  // }
-  // if (resultBooks.loading) {
-    // return <p>Loading...</p>;
-  // }
-// 
-  // if (resultBooks.error) {
-    // return <p>Error while fetching books: {resultBooks.error.message}</p>;
-  // }
-// 
+  if (!resultBooks.data) {
+    return <p>Data not available</p>;
+  }
+  if (resultBooks.loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (resultBooks.error) {
+    return <p>Error while fetching books: {resultBooks.error.message}</p>;
+  }
+
   // Ensure that result.data is defined before accessing it
-  //  if (!resultBooks.data) {
-    // return <p>Data not available</p>;
-  //  }
-  // console.log(result.data, resultBooks.data)
+   if (!resultBooks.data) {
+    return <p>Data not available</p>;
+   }
+  console.log(result.data, resultBooks.data)
 
 
   return (
@@ -92,7 +91,7 @@ const App = () => {
 
       <Authors authors={result.data.allAuthors} show={page === 'authors'} />
 
-      {/* <Books books={resultBooks.data.allBooks} show={page === 'books'} /> */}
+      <Books books={resultBooks.data.allBooks} show={page === 'books'} />
 
       <NewBook show={page === 'add'} />
 
