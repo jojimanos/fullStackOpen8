@@ -14,6 +14,7 @@ const { startStandaloneServer } = require('@apollo/server/standalone')
 const { v1: uuid } = require('uuid')
 
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 
 const MONGO_URI = process.env.MONGO_URI
 
@@ -36,6 +37,7 @@ type Query {
 
   type User {
     username: String!
+    password: String!
     favouriteGenre: String!
     id: ID!
   }
@@ -72,10 +74,12 @@ type Mutation {
   ): Author
   createUser(
     username: String!
+    password: String!
     favouriteGenre: String!
   ): User
   login(
     username: String!
+    password: String!
   ): Token
 }
 `
@@ -104,9 +108,9 @@ const resolvers = {
           result = books
         }
         else if (args.author && args.genres) {
-          
+
           let author = await Author.findOne({ name: args.author }).populate('author')
-          
+
           let books = Book.find({ author: author._id, genres: args.genres })
           result = books
         }
@@ -168,22 +172,33 @@ const resolvers = {
     createUser: async (root, args) => {
 
       try {
-      const user = new User({ username: args.username, favouriteGenre: args.favouriteGenre })
-      return user.save()
+
+        let saltRounds = 10
+
+        const salt = bcrypt.genSaltSync(saltRounds);
+        const hash = bcrypt.hashSync(args.password, salt)
+
+        const user = new User({ username: args.username, password: hash, favouriteGenre: args.favouriteGenre })
+        return user.save()
       } catch (error) {
-         throw new GraphQLError(`Creating the user failed ${error.message}`, {
-            extensions: {
-              code: 'BAD_USER_INPUT',
-              invalidArgs: args.username,
-              error
-            }
-          })
+        throw new GraphQLError(`Creating the user failed ${error.message}`, {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.username,
+            error
+          }
+        })
       }
     },
     login: async (root, args) => {
+
       const user = await User.findOne({ username: args.username })
 
-      if (!user) {
+      const passwordCorrect = user === null
+        ? false
+        : await bcrypt.compare(args.password, user.password)
+
+      if (!(user && passwordCorrect)) {
         throw new GraphQLError('wrong credentials', {
           extensions: {
             code: 'BAD_USER_INPUT'

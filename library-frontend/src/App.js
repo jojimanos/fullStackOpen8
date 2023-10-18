@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import { gql, useQuery } from '@apollo/client'
 import SetBirthyear from './components/SetBirthyear'
 import LoginForm from './components/LoginForm'
+import { useApolloClient } from '@apollo/client'
 
 const ALL_AUTHORS = gql`
 query {
@@ -32,26 +33,29 @@ query {
 `
 const App = () => {
 
-  const [token, setToken] = useState(null)
-  // ...
+  // const localToken = 
+
+  const [localToken, setLocalToken] = useState(localStorage.getItem('book-list-users-token'))
 
   const [page, setPage] = useState('authors')
 
   const result = useQuery(ALL_AUTHORS)
   const resultBooks = useQuery(ALL_BOOKS)
 
-  if (!token) {
-    return (
-      <div>
-        {/* <Notify errorMessage={errorMessage} /> */}
-        <h2>Login</h2>
-        <LoginForm
-        setToken={setToken}
-        // setError={notify}
-        />
-      </div>
-    )
-  }
+  const client = useApolloClient()
+
+  // if (!token) {
+  // return (
+  // <div>
+  // <Notify errorMessage={errorMessage} />
+  {/* <h2>Login</h2> */ }
+  {/* <LoginForm */ }
+  // setToken={setToken}
+  // setError={notify}
+  // />
+  {/* </div> */ }
+  // )
+  // }
 
   if (result.loading) {
     return <p>Loading...</p>;
@@ -73,20 +77,28 @@ const App = () => {
     return <p>Error while fetching books: {resultBooks.error.message}</p>;
   }
 
-  // Ensure that result.data is defined before accessing it
-   if (!resultBooks.data) {
+  // Ensure that resultBooks.data is defined before accessing it
+  if (!resultBooks.data) {
     return <p>Data not available</p>;
-   }
+  }
   console.log(result.data, resultBooks.data)
 
+  const logout = () => {
+    localStorage.clear()
+    client.resetStore()
+    setLocalToken('')
+    setPage('authors')
+  }
 
   return (
     <div>
       <div>
         <button onClick={() => setPage('authors')}>authors</button>
         <button onClick={() => setPage('books')}>books</button>
-        <button onClick={() => setPage('add')}>add book</button>
-        <button onClick={() => setPage('edit')}>edit author</button>
+        {localToken ? <button onClick={() => setPage('add')}>add book</button> : null}
+        {localToken ? <button onClick={() => setPage('edit')}>edit author</button> : null}
+        {!localToken ? <button onClick={() => setPage('login')}>login</button> : null}
+        {localToken ? <button onClick={() => logout()}>logout</button> : null}
       </div>
 
       <Authors authors={result.data.allAuthors} show={page === 'authors'} />
@@ -94,6 +106,8 @@ const App = () => {
       <Books books={resultBooks.data.allBooks} show={page === 'books'} />
 
       <NewBook show={page === 'add'} />
+
+      <LoginForm show={page === 'login'} setToken={setLocalToken} setPage={setPage}/>
 
       {/* <SetBirthyear authors={result.data.allAuthors} show={page === 'edit'} /> */}
     </div>
