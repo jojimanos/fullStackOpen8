@@ -2,10 +2,9 @@ import { gql, useMutation } from '@apollo/client'
 import { useState } from 'react'
 
 const NEW_BOOK = gql`
-mutation addBook($title: String!, $author: Author!, $published: Int!, $genres: [String!]!) {
+mutation addBook($title: String!, $author: String!, $published: Int!, $genres: [String!]!) {
     addBook(title: $title, author: $author, published: $published, genres: $genres) {
       title
-      author
       genres
       id
     }
@@ -72,6 +71,7 @@ const NewBook = (props) => {
 
   return (
     <div>
+      <h4>add a new book</h4>
       <form onSubmit={submit}>
         <div>
           title

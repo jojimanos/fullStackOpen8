@@ -6,6 +6,7 @@ import { gql, useQuery } from '@apollo/client'
 import SetBirthyear from './components/SetBirthyear'
 import LoginForm from './components/LoginForm'
 import { useApolloClient } from '@apollo/client'
+import Recommended from './components/Recommended'
 
 const ALL_AUTHORS = gql`
 query {
@@ -97,6 +98,7 @@ const App = () => {
         <button onClick={() => setPage('books')}>books</button>
         {localToken ? <button onClick={() => setPage('add')}>add book</button> : null}
         {localToken ? <button onClick={() => setPage('edit')}>edit author</button> : null}
+        {localToken ? <button onClick={() => setPage('recommended')}>recommended</button> : null}
         {!localToken ? <button onClick={() => setPage('login')}>login</button> : null}
         {localToken ? <button onClick={() => logout()}>logout</button> : null}
       </div>
@@ -109,7 +111,9 @@ const App = () => {
 
       <LoginForm show={page === 'login'} setToken={setLocalToken} setPage={setPage}/>
 
-      {/* <SetBirthyear authors={result.data.allAuthors} show={page === 'edit'} /> */}
+      <Recommended show={page === "recommended"} books={resultBooks.data.allBooks}/>
+
+      <SetBirthyear authors={result.data.allAuthors} show={page === 'edit'} />
     </div>
   )
 }

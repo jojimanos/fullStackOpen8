@@ -39,6 +39,7 @@ const SetBirthyear = (props) => {
     event.preventDefault()
 
     const birthyearInt = parseInt(birthyear, 10)
+    console.log(birthyearInt)
 
     await update({ variables: { name: author, setBornTo: birthyearInt } })
 
@@ -49,9 +50,10 @@ const SetBirthyear = (props) => {
 
   return (
     <div>
+      <h4>edit author</h4>
       <form onSubmit={submit}>
         <select value={author} onChange={e => setAuthor(e.target.value)}>
-          {props.authors.map(a => { return <option value={a.name}>{a.name}</option> })}
+          {props.authors.map((a, i) => { return <option key={i} value={a.name}>{a.name}</option> })}
         </select>
         <div>
           birthyear
