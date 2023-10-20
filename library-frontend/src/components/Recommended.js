@@ -1,5 +1,7 @@
 import { gql, useQuery } from "@apollo/client"
 
+
+
 const Recommended = ({ books, show }) => {
 
     const USER = gql`
@@ -10,16 +12,34 @@ const Recommended = ({ books, show }) => {
         }
    } 
    `
+    const ALL_BOOKS_FILTERED = gql`
+    query allBooks($genres: [String]) {
+      allBooks(genres: $genres) {
+        author {
+          name
+          born
+        }
+        title
+        id
+        published
+        genres
+      }
+    }
+    `
+    const {data: userData} = useQuery(USER)
+    const favouriteGenre = userData?.me?.favouriteGenre
+    const {data: filteredBookData} = useQuery(ALL_BOOKS_FILTERED, {
+     skip: !favouriteGenre,   variables: {genres: favouriteGenre}
+    })
+    if (!userData)
+    return 
 
-   const user = useQuery(USER) 
-   console.log(user)
+    // const filteredBooks = books.filter(b => b.genres.includes(userData.me.favouriteGenre))
+    // console.log("Recommended", filteredBooks, userData.me.favouriteGenre)
+    console.log("Recommended", filteredBookData)
 
     if (!show)
         return null
-
-    const filteredBooks = books.filter(b => b.genres.includes(user.data.me.favouriteGenre))
-    console.log("Recommended", filteredBooks, user.data.me.favouriteGenre)
-
     return (
         <div>
             <h2>Recommended Books</h2>
@@ -30,7 +50,7 @@ const Recommended = ({ books, show }) => {
                         <th>author</th>
                         <th>published</th>
                     </tr>
-                    {filteredBooks.map((a) => (
+                    {filteredBookData.allBooks.map((a) => (
                         <tr key={a.title} hidden={false}>
                             <td>{a.title}</td>
                             <td>{a.author.name}</td>

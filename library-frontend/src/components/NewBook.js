@@ -54,7 +54,7 @@ const NewBook = (props) => {
 
     await update({ variables: { title: title, author: author, published: publishedInt, genres: genres } })
 
-    props.books = [...props.books, { title: title, author: author, published: publishedInt, genres: genres }]
+    // props.books = [...props.books, { title: title, author: author, published: publishedInt, genres: genres }]
 
     setTitle('')
     setPublished('')

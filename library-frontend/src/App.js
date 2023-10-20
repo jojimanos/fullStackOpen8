@@ -41,8 +41,18 @@ const App = () => {
   const [page, setPage] = useState('authors')
 
   const result = useQuery(ALL_AUTHORS)
+  
+  // const {refetch} = useQuery(ALL_AUTHORS)
+
+  useEffect(() => {
+    result.refetch()
+  }, [page])
+
   const resultBooks = useQuery(ALL_BOOKS)
 
+  useEffect(() => {
+    result.refetch()
+  }, [page])
   const client = useApolloClient()
 
   // if (!token) {

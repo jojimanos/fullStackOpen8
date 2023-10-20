@@ -1,8 +1,47 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { gql, useQuery } from "@apollo/client"
 
 const Books = ({ books, show }) => {
 
-  const [genreFilter, setGenreFilter] = useState('')
+const ALL_BOOKS_FILTERED = gql`
+query allBooks($genres: [String]) {
+  allBooks(genres: $genres) {
+    author {
+      name
+      born
+    }
+    title
+    id
+    published
+    genres
+  }
+}
+`
+
+  const [genreFilter, setGenreFilter] = useState(null)
+
+  const booksList = useQuery(ALL_BOOKS_FILTERED, {
+    variables: {genres: genreFilter}
+  })
+
+  const {refetch} = useQuery(ALL_BOOKS_FILTERED, {variables: {genres: genreFilter}})
+
+  useEffect(() => {
+    refetch({genres: genreFilter})
+  }, [show])
+
+  if (booksList.loading)
+  return <div>Loading...</div>
+
+  if (booksList.error)
+  return <div>Error...</div>
+
+  if (booksList.data === undefined)
+  return <div>No data</div>
+
+  const booksFiltered = booksList.data.allBooks
+
+  console.log(booksList.data, genreFilter)
 
   if (!show) {
     return null
@@ -16,7 +55,7 @@ const Books = ({ books, show }) => {
     <div>
       <h2>books</h2>
 
-      {genreFilter !== "" ? <h4>genre: {genreFilter}</h4> : null}
+      {genreFilter !== null ? <h4>genre: {genreFilter}</h4> : null}
 
       <table>
         <tbody>
@@ -25,15 +64,15 @@ const Books = ({ books, show }) => {
             <th>author</th>
             <th>published</th>
           </tr>
-          {genreFilter !== "" ?
-            books.map((a) => (
+          {genreFilter !== null ?
+            booksFiltered.map((a) => (
               <tr key={a.title} hidden={a.genres.includes(genreFilter) ? false : true}>
                 <td>{a.title}</td>
                 <td>{a.author.name}</td>
                 <td>{a.published}</td>
               </tr>
             )) :
-            books.map((a) => (
+            booksFiltered.map((a) => (
               <tr key={a.title} hidden={false}>
                 <td>{a.title}</td>
                 <td>{a.author.name}</td>
@@ -49,7 +88,7 @@ const Books = ({ books, show }) => {
             onClick={() => { setGenreFilter(g) }}
             key={i} id={i}>{g}</button>
         })}
-        <button onClick={() => setGenreFilter('')}>remove filter</button>
+        <button onClick={() => setGenreFilter(null)}>remove filter</button>
       </div>
 
     </div>
