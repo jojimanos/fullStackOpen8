@@ -6,6 +6,10 @@ const { v1: uuid } = require('uuid')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
+//imports for subscriptions
+const { PubSub } = require('graphql-subscriptions')
+const pubsub = new PubSub()
+
 const resolvers = {
   Query: {
     bookCount: async () => Book.collection.countDocuments(),
@@ -77,6 +81,9 @@ const resolvers = {
         });
 
         await book.save();
+
+        //subscription for addBook mutation
+        pubsub.publish('BOOK_ADDED', { bookAdded: book })
         return book;
       } catch (error) {
         throw new GraphQLError(`Failed to add a book: ${error.message}`);
@@ -135,7 +142,12 @@ const resolvers = {
 
       return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
     },
-  }
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator('BOOK_ADDED')
+    },
+  },
 }
 
 module.exports = resolvers
