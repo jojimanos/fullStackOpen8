@@ -10,8 +10,10 @@ const http = require('http')
 const mongoose = require('mongoose')
 mongoose.set('strictQuery', false)
 
+//schema imports
 const User = require('./schema/user')
 
+//schema queries, mutations and types as well as resolvers 
 const typeDefs = require('./schema')
 const resolvers = require('./resolvers')
 
