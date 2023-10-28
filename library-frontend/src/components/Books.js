@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
-import { gql, useQuery } from "@apollo/client"
+import { gql, useApolloClient, useQuery, useSubscription } from "@apollo/client"
+import { BOOK_ADDED } from "../queries"
 
 const Books = ({ books, show }) => {
 
-const ALL_BOOKS_FILTERED = gql`
+  const ALL_BOOKS_FILTERED = gql`
 query allBooks($genres: [String]) {
   allBooks(genres: $genres) {
     author {
@@ -18,26 +19,56 @@ query allBooks($genres: [String]) {
 }
 `
 
+  const ALL_BOOKS = gql`
+query {
+  allBooks {
+    author {
+      name
+      born
+    }
+    title
+    id
+    published
+    genres
+  }
+}
+`
+
+  const client = useApolloClient()
+
   const [genreFilter, setGenreFilter] = useState(null)
 
   const booksList = useQuery(ALL_BOOKS_FILTERED, {
-    variables: {genres: genreFilter}
+    variables: { genres: genreFilter }
   })
 
-  const {refetch} = useQuery(ALL_BOOKS_FILTERED, {variables: {genres: genreFilter}})
+  const { refetch } = useQuery(ALL_BOOKS_FILTERED, { variables: { genres: genreFilter } })
 
   useEffect(() => {
-    refetch({genres: genreFilter})
+    refetch({ genres: genreFilter })
   }, [show])
 
+  //useSubscription(BOOK_ADDED, {
+  //  onData: ({ data }) => {
+  //    const addedBook = data.data.bookAdded
+  //    // notify(`${addedBook.name} added`)
+  //    client.cache.updateQuery({ query: ALL_BOOKS },
+  //      ({ allBooks }) => {
+  //        return {
+  //          allBooks: allBooks.concat(addedBook),
+  //        }
+  //      })
+  //  }
+  //})
+
   if (booksList.loading)
-  return <div>Loading...</div>
+    return <div>Loading...</div>
 
   if (booksList.error)
-  return <div>Error...</div>
+    return <div>Error...</div>
 
   if (booksList.data === undefined)
-  return <div>No data</div>
+    return <div>No data</div>
 
   const booksFiltered = booksList.data.allBooks
 

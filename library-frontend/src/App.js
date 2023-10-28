@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
-import { gql, useQuery } from '@apollo/client'
+import { gql, useQuery, useSubscription } from '@apollo/client'
 import SetBirthyear from './components/SetBirthyear'
 import LoginForm from './components/LoginForm'
 import { useApolloClient } from '@apollo/client'
 import Recommended from './components/Recommended'
+import { BOOK_ADDED } from './queries'
 
 const ALL_AUTHORS = gql`
 query {
@@ -41,8 +42,18 @@ const App = () => {
   const [page, setPage] = useState('authors')
 
   const result = useQuery(ALL_AUTHORS)
-  
-  // const {refetch} = useQuery(ALL_AUTHORS)
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      const addedBook = data.data.bookAdded
+      client.cache.updateQuery({ query: ALL_BOOKS },
+        ({ allBooks }) => {
+          return {
+            allBooks: allBooks.concat(addedBook),
+          }
+        })
+    }
+  })
 
   useEffect(() => {
     result.refetch()
@@ -119,9 +130,9 @@ const App = () => {
 
       <NewBook show={page === 'add'} />
 
-      <LoginForm show={page === 'login'} setToken={setLocalToken} setPage={setPage}/>
+      <LoginForm show={page === 'login'} setToken={setLocalToken} setPage={setPage} />
 
-      <Recommended show={page === "recommended"} books={resultBooks.data.allBooks}/>
+      <Recommended show={page === "recommended"} books={resultBooks.data.allBooks} />
 
       <SetBirthyear authors={result.data.allAuthors} show={page === 'edit'} />
     </div>
