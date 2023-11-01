@@ -8,6 +8,7 @@ import LoginForm from './components/LoginForm'
 import { useApolloClient } from '@apollo/client'
 import Recommended from './components/Recommended'
 import { BOOK_ADDED } from './queries'
+import { notify } from './notify' 
 
 const ALL_AUTHORS = gql`
 query {
@@ -45,13 +46,16 @@ const App = () => {
 
   useSubscription(BOOK_ADDED, {
     onData: ({ data }) => {
-      const addedBook = data.data.bookAdded
-      client.cache.updateQuery({ query: ALL_BOOKS },
-        ({ allBooks }) => {
-          return {
-            allBooks: allBooks.concat(addedBook),
-          }
-        })
+      console.log(data)
+      notify()
+      result.refetch()
+      // const addedBook = data.data.bookAdded
+      // client.cache.updateQuery({ query: ALL_BOOKS },
+        // ({ allBooks }) => {
+          // return {
+            // allBooks: allBooks.concat(addedBook),
+          // }
+        // })
     }
   })
 
